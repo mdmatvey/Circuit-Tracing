@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QList>
 #include <QPointF>
+#include <QJsonObject>
+#include <QJsonArray>
 #include "vertex.h"
 #include "edge.h"
 
@@ -36,6 +38,10 @@ public:
     // Получить максимальное количество цветов
     int maxColorCount() const { return m_maxColor; }
 
+    // Поддержка JSON для сохранения/загрузки
+    QJsonObject toJson() const;
+    bool fromJson(const QJsonObject &json);
+
 signals:
     void graphChanged();
     void vertexAdded(Vertex *vertex);
@@ -51,6 +57,9 @@ private:
 
     // Алгоритм раскраски
     ColoringAlgorithm *m_coloringAlgorithm;
+
+    // Вспомогательный метод для поиска вершины по ID
+    Vertex* findVertexById(int id) const;
 };
 
 #endif // GRAPH_H

@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
+#include <QCloseEvent>
 #include "graph.h"
 #include "graphwidget.h"
 
@@ -17,8 +19,14 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private slots:
     void on_actionNew_triggered();
+    void on_actionOpen_triggered();
+    void on_actionSave_triggered();
+    void on_actionSaveAs_triggered();
     void on_actionExit_triggered();
     void on_actionAbout_triggered();
 
@@ -35,8 +43,15 @@ private:
     Ui::MainWindow *ui;
     Graph *m_graph;
     GraphWidget *m_graphWidget;
+    QString m_currentFilePath;
 
     void createActions();
     void updateModeButtons();
+
+    bool saveGraph(const QString &filePath);
+    bool loadGraph(const QString &filePath);
+    bool maybeSave();
+    void setCurrentFile(const QString &filePath);
+    QString getFileDialogFilter() const;
 };
 #endif // MAINWINDOW_H

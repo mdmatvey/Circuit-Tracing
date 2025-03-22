@@ -9,6 +9,12 @@
 #include <QToolBar>
 #include <QAction>
 #include <QIcon>
+#include <QFileDialog>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QCloseEvent>
+#include <QFileInfo>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -39,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Начальное сообщение в строке состояния
     statusBar()->showMessage(tr("Ready. Select edit mode to start."));
+
+    // Устанавливаем заголовок по умолчанию
+    setCurrentFile("");
 }
 
 MainWindow::~MainWindow()
@@ -46,10 +55,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (maybeSave()) {
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
 void MainWindow::createActions()
 {
     // Создаем действия меню File
     ui->actionNew->setShortcut(QKeySequence::New);
+    ui->actionOpen->setShortcut(QKeySequence::Open);
+    ui->actionSave->setShortcut(QKeySequence::Save);
+    ui->actionSaveAs->setShortcut(QKeySequence::SaveAs);
     ui->actionExit->setShortcut(QKeySequence::Quit);
 }
 
@@ -66,9 +87,49 @@ void MainWindow::updateModeButtons()
 
 void MainWindow::on_actionNew_triggered()
 {
-    // Очищаем граф
-    m_graph->clear();
-    statusBar()->showMessage(tr("New graph created"));
+    if (maybeSave()) {
+        // Очищаем граф
+        m_graph->clear();
+        setCurrentFile("");
+        statusBar()->showMessage(tr("New graph created"));
+    }
+}
+
+void MainWindow::on_actionOpen_triggered()
+{
+    if (maybeSave()) {
+        QString filePath = QFileDialog::getOpenFileName(this,
+                                                        tr("Open Graph"), "", getFileDialogFilter());
+        if (!filePath.isEmpty()) {
+            if (loadGraph(filePath)) {
+                setCurrentFile(filePath);
+                statusBar()->showMessage(tr("Graph loaded from %1").arg(filePath));
+            }
+        }
+    }
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    if (m_currentFilePath.isEmpty()) {
+        on_actionSaveAs_triggered();
+    } else {
+        if (saveGraph(m_currentFilePath)) {
+            statusBar()->showMessage(tr("Graph saved to %1").arg(m_currentFilePath));
+        }
+    }
+}
+
+void MainWindow::on_actionSaveAs_triggered()
+{
+    QString filePath = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Graph"), "", getFileDialogFilter());
+    if (!filePath.isEmpty()) {
+        if (saveGraph(filePath)) {
+            setCurrentFile(filePath);
+            statusBar()->showMessage(tr("Graph saved to %1").arg(filePath));
+        }
+    }
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -140,4 +201,82 @@ void MainWindow::handleGraphColored()
                              tr("The graph has been colored using %1 colors.\n\n"
                                 "In PCB routing, this would require %1 layers to avoid conflicts.")
                                  .arg(colorCount));
+}
+
+bool MainWindow::saveGraph(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Cannot save file %1:\n%2.").arg(filePath).arg(file.errorString()));
+        return false;
+    }
+
+    QJsonObject jsonGraph = m_graph->toJson();
+    QJsonDocument doc(jsonGraph);
+    file.write(doc.toJson());
+
+    return true;
+}
+
+bool MainWindow::loadGraph(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Cannot open file %1:\n%2.").arg(filePath).arg(file.errorString()));
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+
+    if (doc.isNull() || !doc.isObject()) {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Invalid JSON format in file %1.").arg(filePath));
+        return false;
+    }
+
+    if (!m_graph->fromJson(doc.object())) {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Error loading graph from file %1.").arg(filePath));
+        return false;
+    }
+
+    return true;
+}
+
+bool MainWindow::maybeSave()
+{
+    // Если граф не пуст, предлагаем сохранить изменения
+    if (!m_graph->vertices().isEmpty()) {
+        QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Graph Coloring"),
+                                                               tr("The graph has been modified.\nDo you want to save your changes?"),
+                                                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        if (ret == QMessageBox::Save) {
+            on_actionSave_triggered();
+            return true;
+        } else if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void MainWindow::setCurrentFile(const QString &filePath)
+{
+    m_currentFilePath = filePath;
+
+    QString title = tr("Graph Coloring for PCB Routing");
+    if (!m_currentFilePath.isEmpty()) {
+        title += " - " + QFileInfo(m_currentFilePath).fileName();
+    }
+
+    setWindowTitle(title);
+}
+
+QString MainWindow::getFileDialogFilter() const
+{
+    return tr("JSON Files (*.json);;All Files (*)");
 }
