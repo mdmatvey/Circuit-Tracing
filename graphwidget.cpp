@@ -105,6 +105,9 @@ GraphWidget::GraphWidget(QWidget *parent)
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setCacheMode(QGraphicsView::CacheBackground);
     setDragMode(QGraphicsView::NoDrag);
+
+    // Включаем отслеживание мыши без нажатия кнопок
+    setMouseTracking(true);
 }
 
 GraphWidget::~GraphWidget()
@@ -198,7 +201,7 @@ void GraphWidget::mousePressEvent(QMouseEvent *event)
 
                     // Создаем временную линию
                     m_tempEdgeLine = new QGraphicsLineItem(
-                        QLineF(m_edgeStartPoint, m_edgeStartPoint));
+                        QLineF(m_edgeStartPoint, scenePos));
                     m_tempEdgeLine->setPen(QPen(Qt::gray, EDGE_WIDTH, Qt::DashLine));
                     m_scene->addItem(m_tempEdgeLine);
                 } else {
@@ -208,9 +211,11 @@ void GraphWidget::mousePressEvent(QMouseEvent *event)
                     }
 
                     // Очищаем временное ребро
-                    m_scene->removeItem(m_tempEdgeLine);
-                    delete m_tempEdgeLine;
-                    m_tempEdgeLine = nullptr;
+                    if (m_tempEdgeLine) {
+                        m_scene->removeItem(m_tempEdgeLine);
+                        delete m_tempEdgeLine;
+                        m_tempEdgeLine = nullptr;
+                    }
                     m_edgeStartVertex = nullptr;
                 }
             }
@@ -246,8 +251,8 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
 
-    if (m_editMode == GraphEditMode::AddEdge && m_tempEdgeLine) {
-        // Обновляем конечную точку временной линии
+    // Обновляем временную линию при режиме добавления ребра, если есть начальная вершина
+    if (m_editMode == GraphEditMode::AddEdge && m_edgeStartVertex && m_tempEdgeLine) {
         QLineF line(m_edgeStartPoint, scenePos);
         m_tempEdgeLine->setLine(line);
     } else {
@@ -257,6 +262,28 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GraphWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+    QPointF scenePos = mapToScene(event->pos());
+
+    // Проверяем, находится ли курсор над вершиной при отпускании кнопки мыши
+    // и мы в режиме добавления ребра с выбранной начальной вершиной
+    if (m_editMode == GraphEditMode::AddEdge && m_edgeStartVertex) {
+        VertexItem *item = findVertexItemAt(scenePos);
+        if (item && item->vertex() != m_edgeStartVertex) {
+            // Создаем ребро
+            if (m_graph) {
+                m_graph->addEdge(m_edgeStartVertex, item->vertex());
+            }
+
+            // Очищаем временное ребро
+            if (m_tempEdgeLine) {
+                m_scene->removeItem(m_tempEdgeLine);
+                delete m_tempEdgeLine;
+                m_tempEdgeLine = nullptr;
+            }
+            m_edgeStartVertex = nullptr;
+        }
+    }
+
     QGraphicsView::mouseReleaseEvent(event);
 
     // Проверяем выделение
@@ -285,6 +312,14 @@ void GraphWidget::keyPressEvent(QKeyEvent *event)
                 }
             }
         }
+    } else if (event->key() == Qt::Key_Escape && m_editMode == GraphEditMode::AddEdge) {
+        // Отменяем создание ребра при нажатии Escape
+        if (m_tempEdgeLine) {
+            m_scene->removeItem(m_tempEdgeLine);
+            delete m_tempEdgeLine;
+            m_tempEdgeLine = nullptr;
+        }
+        m_edgeStartVertex = nullptr;
     } else {
         QGraphicsView::keyPressEvent(event);
     }
