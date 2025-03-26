@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateModeButtons();
 
     // Начальное сообщение в строке состояния
-    statusBar()->showMessage(tr("Ready. Select edit mode to start."));
+    statusBar()->showMessage(tr("Готово. Выберите режим редактирования, чтобы начать."));
 
     // Устанавливаем заголовок по умолчанию
     setCurrentFile("");
@@ -91,7 +91,7 @@ void MainWindow::on_actionNew_triggered()
         // Очищаем граф
         m_graph->clear();
         setCurrentFile("");
-        statusBar()->showMessage(tr("New graph created"));
+        statusBar()->showMessage(tr("Новый граф создан"));
     }
 }
 
@@ -99,11 +99,11 @@ void MainWindow::on_actionOpen_triggered()
 {
     if (maybeSave()) {
         QString filePath = QFileDialog::getOpenFileName(this,
-                                                        tr("Open Graph"), "", getFileDialogFilter());
+                                                        tr("Открыть граф"), "", getFileDialogFilter());
         if (!filePath.isEmpty()) {
             if (loadGraph(filePath)) {
                 setCurrentFile(filePath);
-                statusBar()->showMessage(tr("Graph loaded from %1").arg(filePath));
+                statusBar()->showMessage(tr("Граф загружен из %1").arg(filePath));
             }
         }
     }
@@ -115,7 +115,7 @@ void MainWindow::on_actionSave_triggered()
         on_actionSaveAs_triggered();
     } else {
         if (saveGraph(m_currentFilePath)) {
-            statusBar()->showMessage(tr("Graph saved to %1").arg(m_currentFilePath));
+            statusBar()->showMessage(tr("Граф сохранен в %1").arg(m_currentFilePath));
         }
     }
 }
@@ -123,11 +123,11 @@ void MainWindow::on_actionSave_triggered()
 void MainWindow::on_actionSaveAs_triggered()
 {
     QString filePath = QFileDialog::getSaveFileName(this,
-                                                    tr("Save Graph"), "", getFileDialogFilter());
+                                                    tr("Сохранить граф"), "", getFileDialogFilter());
     if (!filePath.isEmpty()) {
         if (saveGraph(filePath)) {
             setCurrentFile(filePath);
-            statusBar()->showMessage(tr("Graph saved to %1").arg(filePath));
+            statusBar()->showMessage(tr("Граф сохранен в %1").arg(filePath));
         }
     }
 }
@@ -140,51 +140,51 @@ void MainWindow::on_actionExit_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, tr("About Graph Coloring"),
-                       tr("Graph Coloring for PCB Routing\n\n"
-                          "This application demonstrates the graph coloring algorithm "
-                          "for resolving conflicts in multilayer PCB routing.\n\n"
-                          "© 2023 Your Name"));
+                       tr("Раскраска графа для трассировки печатной платы\n\n"
+                          "Это приложение демонстрирует алгоритм раскраски графа. "
+                          "для разрешения конфликтов при разводке многослойных печатных плат.\n\n"
+                          "© 2025 ст. гр. 1214 Лёшин М.Д."));
 }
 
 void MainWindow::on_btnSelect_clicked()
 {
     m_graphWidget->setEditMode(GraphEditMode::Select);
     updateModeButtons();
-    statusBar()->showMessage(tr("Select mode: Click to select items"));
+    statusBar()->showMessage(tr("Режим выбора: нажмите, чтобы выбрать элементы"));
 }
 
 void MainWindow::on_btnAddVertex_clicked()
 {
     m_graphWidget->setEditMode(GraphEditMode::AddVertex);
     updateModeButtons();
-    statusBar()->showMessage(tr("Add Vertex mode: Click to add vertices"));
+    statusBar()->showMessage(tr("Режим добавления вершин: нажмите, чтобы добавить вершины."));
 }
 
 void MainWindow::on_btnAddEdge_clicked()
 {
     m_graphWidget->setEditMode(GraphEditMode::AddEdge);
     updateModeButtons();
-    statusBar()->showMessage(tr("Add Edge mode: Click two vertices to connect them"));
+    statusBar()->showMessage(tr("Режим добавления ребра: щелкните две вершины, чтобы соединить их."));
 }
 
 void MainWindow::on_btnRemove_clicked()
 {
     m_graphWidget->setEditMode(GraphEditMode::RemoveItem);
     updateModeButtons();
-    statusBar()->showMessage(tr("Remove mode: Click to remove vertices or edges"));
+    statusBar()->showMessage(tr("Режим удаления: нажмите, чтобы удалить вершины или ребра."));
 }
 
 void MainWindow::on_btnColorGraph_clicked()
 {
     // Запускаем алгоритм раскраски
     m_graphWidget->colorGraph();
-    statusBar()->showMessage(tr("Graph coloring algorithm applied"));
+    statusBar()->showMessage(tr("Применен алгоритм раскраски графа"));
 }
 
 void MainWindow::handleItemSelected(bool selected)
 {
     if (selected) {
-        statusBar()->showMessage(tr("Item selected. Press Delete to remove"));
+        statusBar()->showMessage(tr("Выбран элемент. Нажмите Delete, чтобы удалить"));
     } else {
         updateModeButtons(); // Восстанавливаем сообщение о текущем режиме
     }
@@ -194,12 +194,12 @@ void MainWindow::handleGraphColored()
 {
     // Выводим информацию о количестве использованных цветов
     int colorCount = m_graph->maxColorCount();
-    statusBar()->showMessage(tr("Graph colored using %1 colors").arg(colorCount));
+    statusBar()->showMessage(tr("Граф раскрашен, используя %1 цвета(-ов)").arg(colorCount));
 
     // Можно вывести дополнительную информацию в диалоговом окне
-    QMessageBox::information(this, tr("Graph Coloring Result"),
-                             tr("The graph has been colored using %1 colors.\n\n"
-                                "In PCB routing, this would require %1 layers to avoid conflicts.")
+    QMessageBox::information(this, tr("Результат раскраски графа"),
+                             tr("Граф раскрашен, используя %1 цвета(-ов).\n\n"
+                                "При разводке печатной платы это потребует %1 слоя(-ев), чтобы избежать конфликтов.")
                                  .arg(colorCount));
 }
 
@@ -207,8 +207,8 @@ bool MainWindow::saveGraph(const QString &filePath)
 {
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Cannot save file %1:\n%2.").arg(filePath).arg(file.errorString()));
+        QMessageBox::warning(this, tr("Ошибка"),
+                             tr("Не удалось сохранить файл %1:\n%2.").arg(filePath).arg(file.errorString()));
         return false;
     }
 
@@ -224,7 +224,7 @@ bool MainWindow::loadGraph(const QString &filePath)
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::warning(this, tr("Error"),
-                             tr("Cannot open file %1:\n%2.").arg(filePath).arg(file.errorString()));
+                             tr("Не удалось открыть файл %1:\n%2.").arg(filePath).arg(file.errorString()));
         return false;
     }
 
@@ -232,14 +232,14 @@ bool MainWindow::loadGraph(const QString &filePath)
     QJsonDocument doc = QJsonDocument::fromJson(data);
 
     if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Invalid JSON format in file %1.").arg(filePath));
+        QMessageBox::warning(this, tr("Ошибка"),
+                             tr("Неправильный формат JSON в файле %1.").arg(filePath));
         return false;
     }
 
     if (!m_graph->fromJson(doc.object())) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Error loading graph from file %1.").arg(filePath));
+        QMessageBox::warning(this, tr("Ошибка"),
+                             tr("Ошибка загрузки графа из file %1.").arg(filePath));
         return false;
     }
 
@@ -250,8 +250,8 @@ bool MainWindow::maybeSave()
 {
     // Если граф не пуст, предлагаем сохранить изменения
     if (!m_graph->vertices().isEmpty()) {
-        QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Graph Coloring"),
-                                                               tr("The graph has been modified.\nDo you want to save your changes?"),
+        QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Раскраска графа"),
+                                                               tr("График был изменен.\nВы хотите сохранить изменения?"),
                                                                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
         if (ret == QMessageBox::Save) {
@@ -268,7 +268,7 @@ void MainWindow::setCurrentFile(const QString &filePath)
 {
     m_currentFilePath = filePath;
 
-    QString title = tr("Graph Coloring for PCB Routing");
+    QString title = tr("Раскраска графа для трассировки печатной платы");
     if (!m_currentFilePath.isEmpty()) {
         title += " - " + QFileInfo(m_currentFilePath).fileName();
     }
@@ -278,5 +278,5 @@ void MainWindow::setCurrentFile(const QString &filePath)
 
 QString MainWindow::getFileDialogFilter() const
 {
-    return tr("JSON Files (*.json);;All Files (*)");
+    return tr("JSON файлы (*.json);;Все файлы (*)");
 }
