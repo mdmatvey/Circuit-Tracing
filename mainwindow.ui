@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Graph Coloring for PCB Routing</string>
+   <string>Раскраска вершин графа</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -20,12 +20,12 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Файл</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
@@ -36,7 +36,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>Помощь</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
@@ -64,7 +64,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Select</string>
+     <string>Выбрать</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
@@ -80,7 +80,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add Vertex</string>
+     <string>Добавить вершину</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
@@ -96,7 +96,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add Edge</string>
+     <string>Добавить грань</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
@@ -112,7 +112,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Remove</string>
+     <string>Удалить</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
@@ -128,38 +128,38 @@
      </rect>
     </property>
     <property name="text">
-     <string>Color Graph</string>
+     <string>Раскрасить граф</string>
     </property>
    </widget>
   </widget>
   <action name="actionNew">
    <property name="text">
-    <string>New</string>
+    <string>Новый</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>Выход</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>Подробнее</string>
    </property>
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open...</string>
+    <string>Открыть...</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>Сохранить</string>
    </property>
   </action>
   <action name="actionSaveAs">
    <property name="text">
-    <string>Save As...</string>
+    <string>Сохранить как...</string>
    </property>
   </action>
  </widget>
